@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-xxx" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="container">
+        <h1><i class="fa-solid fa-graduation-cap"></i> Student Portal</h1>
+
+        <!-- Login/Register Section -->
+        <div id="auth-section">
+            <h2><i class="fa-solid fa-user-lock"></i> Login/Register</h2>
+            <div id="login-form">
+                <input type="email" id="login-email" placeholder="Email" required autocomplete="off">
+                <input type="password" id="login-password" placeholder="Password" required autocomplete="off">
+                <button onclick="login()"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+                <button onclick="showRegisterForm()"><i class="fa-solid fa-user-plus"></i> Register</button>
+                <p id="login-error" style="color: red; display: none;"></p>
+            </div>
+
+            <form id="register-form" style="display: none;" autocomplete="off">
+                <input type="text" id="name" placeholder="Name" required autocomplete="off">
+                <input type="text" id="surname" placeholder="Surname" required autocomplete="off">
+                <input type="email" id="register-email" placeholder="Email" required autocomplete="off">
+                <input type="password" id="register-password" placeholder="Password" required autocomplete="off">
+                <label>
+                    <input type="checkbox" id="isGraduated"> Graduated
+                </label>
+                <button type="button" onclick="register()"><i class="fa-solid fa-user-plus"></i> Register</button>
+                <p id="register-error" style="color: red; display: none;"></p>
+                <button type="button" onclick="showLoginForm()"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+            </form>
+        </div>
+
+        <!-- Main Section (Hidden until logged in) -->
+        <div id="main-section" style="display: none;">
+            <!-- Student Info -->
+            <div id="student-info">
+                <h2><i class="fa-solid fa-user-graduate"></i> Welcome, <span id="student-name"></span></h2>
+                <p><i class="fa-solid fa-id-badge"></i> Student ID: <span id="student-id"></span></p>
+            </div>
+
+            <!-- View Invoices -->
+            <div>
+                <h3><i class="fa-solid fa-file-invoice-dollar"></i> Your Invoices</h3>
+                <div>
+                    <label for="invoice-status"><i class="fa-solid fa-filter"></i> Filter by Status:</label>
+                    <select id="invoice-status">
+                        <option value="">All</option>
+                        <option value="OUTSTANDING">Outstanding</option>
+                        <option value="PAID">Paid</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                    <label for="invoice-type"><i class="fa-solid fa-filter"></i> Filter by Type:</label>
+                    <select id="invoice-type">
+                        <option value="">All</option>
+                        <option value="TUITION_FEES">Tuition Fees</option>
+                        <option value="LIBRARY_FINE">Library Fine</option>
+                    </select>
+                    <button onclick="viewInvoices()"><i class="fa-solid fa-arrows-rotate"></i> Refresh Invoices</button>
+                </div>
+                <ul id="invoice-list"></ul>
+            </div>
+
+            <!-- View/Update Profile -->
+            <div>
+                <h3><i class="fa-solid fa-user-pen"></i> Update Profile</h3>
+                <input type="text" id="update-name" placeholder="New Name">
+                <input type="text" id="update-surname" placeholder="New Surname">
+                <button onclick="updateProfile()"><i class="fa-solid fa-floppy-disk"></i> Update Profile</button>
+            </div>
+
+            <!-- View Courses -->
+            <div>
+                <h3><i class="fa-solid fa-book-open-reader"></i> Available Courses</h3>
+                <ul id="course-list"></ul>
+            </div>
+
+            <!-- View Enrolments -->
+            <div>
+                <h3><i class="fa-solid fa-bookmark"></i> Your Enrolments</h3>
+                <ul id="enrolment-list"></ul>
+                <button onclick="viewEnrolments()"><i class="fa-solid fa-arrows-rotate"></i> Refresh Enrolments</button>
+            </div>
+
+            <!-- Check Graduation Eligibility -->
+            <div>
+                <h3><i class="fa-solid fa-graduation-cap"></i> Graduation Eligibility</h3>
+                <button onclick="checkGraduation()"><i class="fa-solid fa-check-circle"></i> Check Eligibility</button>
+                <p id="graduation-status"></p>
+            </div>
+
+            <!-- Delete Profile -->
+            <div>
+                <h3><i class="fa-solid fa-user-slash"></i> Account Management</h3>
+                <button onclick="deleteAccount()" style="background-color: red;"><i class="fa-solid fa-trash"></i> Delete Profile</button>
+            </div>
+
+            <!-- Logout -->
+            <button onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
