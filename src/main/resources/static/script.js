@@ -1,7 +1,7 @@
 let currentStudent = null;
 
 // Base URL for the backend API
-const API_URL = 'http://localhost:8080/student';
+const API_URL = 'http://localhost:8069/student';
 
 // Initialize the app on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -194,38 +194,42 @@ async function loadCourses() {
         }
 
         const response = await fetch(`${API_URL}/courses`);
-        if (response.ok) {
-            const courses = await response.json();
-            const courseList = document.getElementById('course-list');
-            courseList.innerHTML = '';
-            courses.forEach(course => {
-                const li = document.createElement('li');
-                const courseContainer = document.createElement('div');
-                courseContainer.style.display = 'flex';
-                courseContainer.style.alignItems = 'center';
-                courseContainer.style.justifyContent = 'space-between';
+  if (response.ok) {
+    const courses = await response.json();
+    const courseList = document.getElementById('course-list');
+    courseList.innerHTML = '';
+    courses.forEach(course => {
+        const li = document.createElement('li');
 
-                const courseText = document.createElement('span');
-                courseText.textContent = `ID: ${course.id} - ${course.name} (${course.description})`;
-                courseContainer.appendChild(courseText);
+        const courseContainer = document.createElement('div');
+        courseContainer.className = 'flex items-center justify-between mb-2 p-2 border rounded';
 
-                const enrolButton = document.createElement('button');
-                enrolButton.textContent = 'Enrol';
-                enrolButton.style.backgroundColor = 'green';
-                enrolButton.style.color = 'white';
-                enrolButton.style.marginLeft = '10px';
-                const isAlreadyEnrolled = enrolledCourseIds.includes(course.id.toString());
-                enrolButton.disabled = isAlreadyEnrolled;
-                enrolButton.style.opacity = isAlreadyEnrolled ? '0.5' : '1';
-                enrolButton.onclick = () => enrolInCourse(course.id);
-                courseContainer.appendChild(enrolButton);
+        const courseText = document.createElement('span');
+        courseText.textContent = `ID: ${course.id} - ${course.name} (${course.description})`;
+        courseText.className = 'text-gray-700';
+        courseContainer.appendChild(courseText);
 
-                li.appendChild(courseContainer);
-                courseList.appendChild(li);
-            });
-        } else {
-            alert('Failed to load courses');
+        const enrolButton = document.createElement('button');
+        enrolButton.textContent = 'Enrol';
+        enrolButton.className = 'bg-green-600 text-white px-4 py-1 ml-4 rounded hover:bg-green-700 transition duration-200 text-sm';
+
+        const isAlreadyEnrolled = enrolledCourseIds.includes(course.id.toString());
+        enrolButton.disabled = isAlreadyEnrolled;
+
+        if (isAlreadyEnrolled) {
+            enrolButton.classList.add('opacity-50', 'cursor-not-allowed');
         }
+
+        enrolButton.onclick = () => enrolInCourse(course.id);
+        courseContainer.appendChild(enrolButton);
+
+        li.appendChild(courseContainer);
+        courseList.appendChild(li);
+    });
+} else {
+    alert('Failed to load courses');
+}
+
     } catch (error) {
         alert('Network error while loading courses: ' + error.message);
     }
@@ -378,7 +382,7 @@ async function viewInvoices() {
             }
             invoices.forEach(invoice => {
                 const li = document.createElement('li');
-                li.textContent = `Invoice ID: ${invoice.id} | Type: ${invoice.type} | Amount: £${invoice.amount} | Status: ${invoice.status} | Description: ${invoice.description} | Due: ${invoice.dueDate}`;
+                li.textContent = ` Reference: ${invoice.reference} | Type: ${invoice.type} | Amount: £${invoice.amount} | Status: ${invoice.status} | Description: ${invoice.description} | Due: ${invoice.dueDate}`;
                 invoiceList.appendChild(li);
             });
         } else {

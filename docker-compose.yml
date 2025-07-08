@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    image: maven:3.9.4-eclipse-temurin-17
+    container_name: eureka-server
+    working_dir: /app/eureka-server
+    volumes:
+      - ./eureka-server:/app/eureka-server
+      - ~/.m2:/root/.m2
+    ports:
+      - "8761:8761"
+    command: mvn spring-boot:run
+    networks:
+      - shared-network
+
+  auth-service:
+    image: maven:3.9.4-eclipse-temurin-17
+    container_name: portal-auth-api
+    working_dir: /app/portal-auth-api
+    volumes:
+      - ./:/app/portal-auth-api
+      - ~/.m2:/root/.m2
+    ports:
+      - "8069:8069"
+    command: mvn spring-boot:run
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://mariadb:3306/studentdb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+    depends_on:
+      - mariadb
+      - eureka-server
+    networks:
+      - shared-network
+
+  mariadb:
+    image: mariadb:11
+    container_name: portal-db
+    restart: always
+    ports:
+      - "3329:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: studentdb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - shared-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  shared-network:
+    external: true

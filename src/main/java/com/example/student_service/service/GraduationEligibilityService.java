@@ -37,7 +37,7 @@ public class GraduationEligibilityService {
             for (long invoiceId = 1; invoiceId <= 100; invoiceId++) {
                 try {
                     ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                        "http://localhost:8081/invoices/" + invoiceId,
+                        "http://192.168.0.20:8081/invoices/" + invoiceId,
                         HttpMethod.GET,
                         null,
                         new ParameterizedTypeReference<Map<String, Object>>() {}

@@ -36,44 +36,58 @@ public class CourseService {
 
     private final Logger logger = LoggerFactory.getLogger(CourseService.class);
 
-    public Student enrolInCourse(Long studentId, Long courseId) {
-        Student student = repo.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-        Course course = courseRepo.findById(courseId)
-                .orElseThrow(() -> new IllegalArgumentException("Course not found"));
-    
-        if (student.getEnrolledCourses().stream()
-                .anyMatch(c -> c.getId().equals(courseId))) {
-            throw new RuntimeException("Student already enrolled in this course");
-        }
-    
-        student.getEnrolledCourses().add(course);
-        Student saved = repo.save(student);
-    
-        Map<String, Object> invoicePayload = new HashMap<>();
-        invoicePayload.put("studentId", studentId.toString());
-        invoicePayload.put("amount", 100.0);
-        invoicePayload.put("type", "TUITION_FEES");
-        invoicePayload.put("description", "Tuition fee for course: " + course.getName());
-        invoicePayload.put("dueDate", LocalDate.now().plusDays(30).toString());
-    
-        try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                "http://localhost:8081/invoices",
-                invoicePayload,
-                Map.class
-            );
+   
+public Student enrolInCourse(Long studentId, Long courseId) {
+    Student student = repo.findById(studentId)
+            .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+    Course course = courseRepo.findById(courseId)
+            .orElseThrow(() -> new IllegalArgumentException("Course not found"));
+
+    if (student.getEnrolledCourses().stream()
+            .anyMatch(c -> c.getId().equals(courseId))) {
+        throw new RuntimeException("Student already enrolled in this course");
+    }
+
+    student.getEnrolledCourses().add(course);
+    Student saved = repo.save(student);
+
+    // Ensure the studentId is valid and part of the account map
+    Map<String, Object> invoicePayload = new HashMap<>();
+    invoicePayload.put("amount", 100.0);
+    invoicePayload.put("type", "TUITION_FEES");
+    invoicePayload.put("description", "Tuition fee for course: " + course.getName());
+    invoicePayload.put("dueDate", LocalDate.now().plusDays(30).toString());
+
+    // 👇 Nested map for 'account' with a valid studentId
+    Map<String, Object> accountMap = new HashMap<>();
+    accountMap.put("studentId", String.valueOf(studentId)); // or just studentId if Long is accepted
+    invoicePayload.put("account", accountMap);
+
+    try {
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+            "http://192.168.0.20:8081/invoices",
+            invoicePayload,
+            Map.class
+        );
+
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             String invoiceReference = (String) response.getBody().get("reference");
             course.setInvoiceReference(invoiceReference);
             courseRepo.save(course);
-        } catch (RestClientException e) {
-            student.getEnrolledCourses().remove(course);
-            repo.save(student);
-            throw new RuntimeException("Failed to create invoice: " + e.getMessage());
+        } else {
+            throw new RuntimeException("Invoice service returned status: " + response.getStatusCode());
         }
-    
-        return saved;
+
+    } catch (RestClientException e) {
+        student.getEnrolledCourses().remove(course);
+        repo.save(student);
+        throw new RuntimeException("Failed to create invoice: " + e.getMessage());
     }
+
+    return saved;
+}
+
+
 
     public List<String> getEnrolledCourses(Long studentId) {
         Student student = repo.findById(studentId)
@@ -89,7 +103,7 @@ public class CourseService {
         List<Map<String, Object>> invoices = new ArrayList<>();
 
         // Step 1: Verify student has an account
-        String accountUrl = "http://localhost:8081/accounts/student/" + studentId;
+        String accountUrl = "http://192.168.0.20:8081/accounts/student/" + studentId;
         try {
             ResponseEntity<Map<String, Object>> accountResponse = restTemplate.exchange(
                 accountUrl,
@@ -109,7 +123,7 @@ public class CourseService {
         // Step 2: Fetch invoices by iterating over possible IDs
         for (long invoiceId = 1; invoiceId <= 100; invoiceId++) { // Arbitrary upper limit
             try {
-                String invoiceUrl = "http://localhost:8081/invoices/" + invoiceId;
+                String invoiceUrl = "http://192.168.0.20:8081/invoices/" + invoiceId;
                 ResponseEntity<Map<String, Object>> invoiceResponse = restTemplate.exchange(
                     invoiceUrl,
                     HttpMethod.GET,
@@ -162,7 +176,7 @@ public class CourseService {
         String invoiceReference = course.getInvoiceReference();
         if (invoiceReference != null) {
             try {
-                restTemplate.delete("http://localhost:8081/invoices/" + invoiceReference + "/cancel");
+                restTemplate.delete("http://192.168.0.20:8081/invoices/" + invoiceReference + "/cancel");
                 course.setInvoiceReference(null);
                 courseRepo.save(course);
             } catch (RestClientException e) {
